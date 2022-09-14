@@ -45,4 +45,5 @@ dist/**
 # translation files
 *.xlf
 *.nls.*.json
-*.i18n.json
+*.i18n.
+cornell-student-housing-backend/
