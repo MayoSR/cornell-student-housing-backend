@@ -25,7 +25,8 @@ from .database import create_db_and_tables
 # Routers
 from .home.routes import router as home_router
 from .accounts.routes import router as accounts_router
-from .property.routes import router as property_router
+from .properties.routes import router as property_router
+from .reviews.routes import router as review_router
 
 
 def get_application():
@@ -47,6 +48,7 @@ def get_application():
     _app.include_router(home_router, prefix="/api", tags=["home"])
     _app.include_router(accounts_router, prefix="/api", tags=["accounts"])
     _app.include_router(property_router, prefix="/api", tags=["properties"])
+    _app.include_router(review_router, prefix="/api", tags=["reviews"])
 
     # Force redirect of the "/" route to "/api"
 

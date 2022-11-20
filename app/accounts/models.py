@@ -8,13 +8,7 @@ from sqlmodel import Field, SQLModel
 # Standard library imports
 import uuid
 from datetime import date
-from typing import Optional
 
-
-class AccountBase(SQLModel, table=False):
-    fname: str
-    lname: str
-    email: str
 
 class Account(SQLModel, table=True):
     __tablename__ = "accounts"
@@ -24,11 +18,16 @@ class Account(SQLModel, table=True):
     email: str
     created: date = Field(default=date.today())
 
-class AccountCreate(AccountBase):
-    pass
+class AccountCreate(SQLModel):
+    fname: str
+    lname: str
+    email: str
 
-class AccountRead(AccountBase):
+class AccountRead(SQLModel):
     id: uuid.UUID
+    fname: str 
+    lname: str
+    email: str
     created: date
 
 class AccountUpdate(SQLModel):

@@ -10,27 +10,30 @@ import uuid
 from datetime import date
 
 
-class PropertyBase(SQLModel, table=False):
-    address: str
-    start_date: str
-    end_date: str
-    monthly_rent: int
-
-
-class Property(PropertyBase, table=True):
+class Property(SQLModel, table=True):
     __tablename__ = "properties"
     id: uuid.UUID = Field(default=uuid.uuid4(), primary_key=True)
     ownerId: uuid.UUID = Field(foreign_key="accounts.id")
+    address: str
+    start_date: date
+    end_date: date
+    monthly_rent: int
     created: date = Field(default=date.today())
 
-class PropertyCreate(PropertyBase):
-    """
-    """
+class PropertyCreate(SQLModel):
     ownerId: uuid.UUID
-
-class PropertyRead(PropertyBase):
+    address: str 
+    start_date: date
+    end_date: date
+    monthly_rent: int
+    
+class PropertyRead(SQLModel):
     id: uuid.UUID
     ownerId: uuid.UUID
+    address: str
+    start_date: date
+    end_date: date
+    monthly_rent: int
     created: date
 
 class PropertyUpdate(SQLModel):

@@ -1,5 +1,9 @@
 """
 Contains route endpoints to access Properties
+
+TODO:
+    - Get all properties by account
+    - Test update and delete
 """
 
 # FastAPI imports
@@ -66,6 +70,7 @@ def create_property(
     TODO: Need to catch when someone adds an ownerID that is invalid
     Unless it's possible to avoid this?
     """
+
     # Create property by using from_orm function
     db_property = Property.from_orm(property)
 
@@ -74,13 +79,13 @@ def create_property(
     session.commit()
     session.refresh(db_property)
 
-    # Return back account
+    # Return back property
     return db_property
 
 
 ### HTTP PATCH FUNCTIONS ###
 
-@router.patch("/{account_id}", response_model=PropertyRead)
+@router.patch("/{property_id}", response_model=PropertyRead)
 def update_property(
     *,
     session: Session = Depends(get_session),
