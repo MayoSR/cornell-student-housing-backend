@@ -1,0 +1,43 @@
+services:
+
+    # API container
+    api:
+
+        # Build from Dockerfile in this scope
+        build:
+            context: .
+            dockerfile: Dockerfile
+
+        # Don't run FastAPI until db is up
+        command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; uvicorn app.main:app --host 0.0.0.0'
+
+        # For docker compose, we'll manually override the env variables
+        environment:
+            - POSTGRES_HOST=db:5432
+            - POSTGRES_DB=postgres
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+
+        # Map ports
+        ports:
+            - 8000:8000
+
+        # Requires db container dependency
+        depends_on:
+            - db
+
+    # DB container running postgres
+    db:
+
+        # Use official postgres 14.6 image
+        image: postgres:14.6
+
+        # Map ports
+        ports:
+            - 5432:5432
+
+        # Must define these
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=postgres
