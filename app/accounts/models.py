@@ -12,7 +12,7 @@ from datetime import date
 
 class Account(SQLModel, table=True):
     __tablename__ = "accounts"
-    id: uuid.UUID = Field(default=uuid.uuid4(), primary_key=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     fname: str 
     lname: str
     email: str

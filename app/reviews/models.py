@@ -12,7 +12,7 @@ from datetime import date
 
 class Review(SQLModel, table=True):
     __tablename__ = "reviews"
-    id: uuid.UUID = Field(default=uuid.uuid4(), primary_key=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     property_id: uuid.UUID = Field(foreign_key="properties.id")
     poster_id: uuid.UUID = Field(foreign_key="accounts.id")
     rating: int = Field(default=0)

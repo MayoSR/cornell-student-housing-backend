@@ -12,12 +12,14 @@ from datetime import date
 
 class Property(SQLModel, table=True):
     __tablename__ = "properties"
-    id: uuid.UUID = Field(default=uuid.uuid4(), primary_key=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     ownerId: uuid.UUID = Field(foreign_key="accounts.id")
     address: str
     start_date: date
     end_date: date
     monthly_rent: int
+    num_bedrooms: int
+    num_bathrooms: int
     created: date = Field(default=date.today())
 
 class PropertyCreate(SQLModel):
@@ -26,6 +28,8 @@ class PropertyCreate(SQLModel):
     start_date: date
     end_date: date
     monthly_rent: int
+    num_bedrooms: int
+    num_bathrooms: int
     
 class PropertyRead(SQLModel):
     id: uuid.UUID
@@ -34,6 +38,8 @@ class PropertyRead(SQLModel):
     start_date: date
     end_date: date
     monthly_rent: int
+    num_bedrooms: int
+    num_bathrooms: int
     created: date
 
 class PropertyUpdate(SQLModel):
@@ -41,3 +47,5 @@ class PropertyUpdate(SQLModel):
     start_date: str | None = None
     end_date: str | None = None
     monthly_rent: int | None = None
+    num_bedrooms: int | None = None
+    num_bathrooms: int | None = None

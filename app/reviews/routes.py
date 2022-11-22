@@ -31,13 +31,20 @@ router = APIRouter(prefix="/reviews")
 @router.get("/", response_model=list[Review])
 def get_all_reviews(
     *,
+    property_id: uuid.UUID | None = Query(default=None),
     session: Session = Depends(get_session),
     offset: int = Query(default=0),
     limit: int = Query(default=100, lte=100),
 ):
 
-    # Get list of reviews
-    reviews = session.exec(select(Review).offset(offset).limit(limit)).all()
+    # For the sake of not having to reuse a variable
+    reviews = None
+
+    # If property_id is specified, then filter
+    if property_id:
+        reviews = session.exec(select(Review).where(Review.property_id == property_id).offset(offset).limit(limit)).all()
+    else:
+        reviews = session.exec(select(Review).offset(offset).limit(limit)).all()
 
     # Return list of reviews
     return reviews
