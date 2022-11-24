@@ -91,7 +91,7 @@ def create_property_image(
                 status_code=400, detail="Unsupported image file type")
 
         # Otherwise, save this file locally
-        path = f"blob/{property_image_upload_file.filename}"
+        path = f"blob/{property_id}/{property_image_upload_file.filename}"
         with open(path, "wb+") as file_obj:
             file_obj.write(property_image_upload_file.file.read())
 
