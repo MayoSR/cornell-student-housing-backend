@@ -36,15 +36,12 @@ def get_all_reviews(
     offset: int = Query(default=0),
     limit: int = Query(default=100, lte=100),
 ):
-
-    # For the sake of not having to reuse a variable
-    reviews = None
-
-    # If property_id is specified, then filter
-    if property_id:
-        reviews = session.exec(select(Review).where(Review.property_id == property_id).offset(offset).limit(limit)).all()
-    else:
-        reviews = session.exec(select(Review).offset(offset).limit(limit)).all()
+    # Get reviews with filter on property id
+    reviews = session.exec(select(Review)
+                           .where((Review.property_id == property_id) if property_id else (Review is not None))
+                           .offset(offset)
+                           .limit(limit))\
+        .all()
 
     # Return list of reviews
     return reviews

@@ -13,7 +13,7 @@ from datetime import date
 class Property(SQLModel, table=True):
     __tablename__ = "properties"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    ownerId: uuid.UUID = Field(foreign_key="accounts.id")
+    owner_id: uuid.UUID = Field(foreign_key="accounts.id")
     address: str
     start_date: date
     end_date: date
@@ -23,7 +23,7 @@ class Property(SQLModel, table=True):
     created: date = Field(default=date.today())
 
 class PropertyCreate(SQLModel):
-    ownerId: uuid.UUID
+    owner_id: uuid.UUID
     address: str 
     start_date: date
     end_date: date
@@ -33,7 +33,7 @@ class PropertyCreate(SQLModel):
     
 class PropertyRead(SQLModel):
     id: uuid.UUID
-    ownerId: uuid.UUID
+    owner_id: uuid.UUID
     address: str
     start_date: date
     end_date: date

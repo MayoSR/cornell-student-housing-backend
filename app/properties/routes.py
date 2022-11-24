@@ -31,13 +31,17 @@ router = APIRouter(prefix="/properties")
 @router.get("/", response_model=list[Property])
 def get_all_properties(
     *,
+    owner_id: uuid.UUID | None = Query(default=None),
     session: Session = Depends(get_session),
     offset: int = Query(default=0),
     limit: int = Query(default=100, lte=100),
 ):
-
-    # Get list of properties
-    properties = session.exec(select(Property).offset(offset).limit(limit)).all()
+    # Get properties with filter on owner_id
+    properties = session.exec(select(Property)
+                           .where((Property.owner_id == owner_id) if owner_id else (Property is not None))
+                           .offset(offset)
+                           .limit(limit))\
+        .all()
 
     # Return list of properties
     return properties
@@ -67,7 +71,7 @@ def create_property(
     property: PropertyCreate = Body()
 ):
     """
-    TODO: Need to catch when someone adds an ownerID that is invalid
+    TODO: Need to catch when someone adds an owner_id that is invalid
     Unless it's possible to avoid this?
     """
 
