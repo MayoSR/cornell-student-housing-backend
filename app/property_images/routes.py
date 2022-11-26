@@ -14,11 +14,12 @@ from .models import PropertyImage, PropertyImageRead
 # Dependency imports
 from ..dependencies import get_session
 
+# Settings import
+from ..core.config import settings
+
 # Standard library imports
 import uuid
-
-# Setting import
-from ..core.config import settings
+import os
 
 
 # Initializing router
@@ -81,22 +82,30 @@ def create_property_image(
         - Should these be separate post requests?
     """
 
-    # First, check if we are on local development or cloud
+    # Check environment
     if settings.dev_environment == "local":
 
-        # Must ensure that file type is supported
+        # Ensure file is supported type
         if property_image_upload_file.content_type not in ("image/png", "image/jpg", "image/jpeg"):
-            print(property_image_upload_file.content_type)
             raise HTTPException(
                 status_code=400, detail="Unsupported image file type")
 
-        # Otherwise, save this file locally
-        path = f"blob/{property_id}/{property_image_upload_file.filename}"
+        # Create subfolder in "/blob" for property id if not found
+        # Then save the file
+        base_path: str = f"blob/{property_id}"
+        if not os.path.exists(base_path):
+            os.makedirs(base_path)
+
+        # Now create the path and save the image
+        path: str = f"{base_path}/{property_image_upload_file.filename}"
         with open(path, "wb+") as file_obj:
             file_obj.write(property_image_upload_file.file.read())
 
-        # Now, create a DB entry for it
-        db_property_image = PropertyImage(property_id=property_id, path=path)
+        # Now create a DB entry for the image
+        abs_path = os.path.abspath(path)
+        print(abs_path)
+        db_property_image = PropertyImage(
+            property_id=property_id, path=abs_path)
 
         # Commit to DBMS
         session.add(db_property_image)
@@ -125,6 +134,17 @@ def delete_property_image(
     property_image = session.get(PropertyImage, property_image_id)
     if not property_image:
         raise HTTPException(status_code=404, detail="Property image not found")
+
+    # Delete image in file system
+    if settings.dev_environment == "local":
+        try:
+            os.remove(property_image.path)
+        except OSError as e:
+            raise HTTPException(
+                status_code=404, detail=f"Image not found on file system: {e.filename} - {e.strerror}")
+    else:
+        raise HTTPException(
+            status_code=501, detail="Image deleting on cloud not yet supported")
 
     # Commit to DBMS
     session.delete(property_image)
