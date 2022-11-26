@@ -23,27 +23,26 @@ import os
 
 
 # Initializing router
-router = APIRouter(prefix="/properties/images")
+router = APIRouter(prefix="/properties")
 
 
 ### HTTP GET FUNCTIONS ###
 
-@router.get("/", response_model=list[PropertyImage])
+@router.get("/{property_id}/images", response_model=list[PropertyImage])
 def get_all_property_images(
     *,
-    property_id: uuid.UUID | None = Query(default=None),
     session: Session = Depends(get_session),
+    property_id: uuid.UUID = Path(),
     offset: int = Query(default=0),
     limit: int = Query(default=100, lte=100),
 ):
     """
-    This will not return the database entries.
-    Instead, it will give the actual images
+    Get all the images for a particular property
     """
 
     # Get property images with filter on property_id
     property_images = session.exec(select(PropertyImage)
-                                   .where((PropertyImage.property_id == property_id) if property_id else (PropertyImage is not None))
+                                   .where(PropertyImage.property_id == property_id)
                                    .offset(offset)
                                    .limit(limit))\
         .all()
@@ -51,55 +50,33 @@ def get_all_property_images(
     # Return list of property images
     return property_images
 
-
-@router.get("/{property_image_id}", response_model=PropertyImageRead)
-def get_property_image_by_id(
-    *,
-    session: Session = Depends(get_session),
-    property_image_id: uuid.UUID = Path()
-):
-    # Get property_image and check if it exists
-    property_image = session.get(PropertyImage, property_image_id)
-    if not property_image:
-        raise HTTPException(status_code=404, detail="Property Image not found")
-
-    # Return back property image
-    return property_image
-
-
 ### HTTP POST FUNCTIONS ###
 
-@router.post("/{property_id}")
+@router.post("/{property_id}/images")
 def create_property_image(
     *,
     session: Session = Depends(get_session),
     property_id: uuid.UUID = Path(),
-    property_image_upload_file: UploadFile = File(),
+    upload_file: UploadFile = File(),
 ):
-    """
-    TODO:
-        - Is there a smarter way to specify property id and the image?
-        - Should these be separate post requests?
-    """
 
     # Check environment
     if settings.dev_environment == "local":
 
         # Ensure file is supported type
-        if property_image_upload_file.content_type not in ("image/png", "image/jpg", "image/jpeg"):
+        if upload_file.content_type not in ("image/png", "image/jpg", "image/jpeg"):
             raise HTTPException(
                 status_code=400, detail="Unsupported image file type")
 
         # Create subfolder in "/blob" for property id if not found
-        # Then save the file
         base_path: str = f"blob/{property_id}"
         if not os.path.exists(base_path):
             os.makedirs(base_path)
 
         # Now create the path and save the image
-        path: str = f"{base_path}/{property_image_upload_file.filename}"
+        path: str = f"{base_path}/{upload_file.filename}"
         with open(path, "wb+") as file_obj:
-            file_obj.write(property_image_upload_file.file.read())
+            file_obj.write(upload_file.file.read())
 
         # Now create a DB entry for the image
         abs_path = os.path.abspath(path)
@@ -122,10 +99,11 @@ def create_property_image(
 
 ### HTTP DELETE FUNCTIONS ###
 
-@router.delete("/{property_image_id}")
+@router.delete("/{property_id}/images/{property_image_id}")
 def delete_property_image(
     *,
     session: Session = Depends(get_session),
+    property_id: uuid.UUID = Path(),
     property_image_id: uuid.UUID = Path()
 ):
 
@@ -133,6 +111,10 @@ def delete_property_image(
     property_image = session.get(PropertyImage, property_image_id)
     if not property_image:
         raise HTTPException(status_code=404, detail="Property image not found")
+
+    # Ensure property image is part of property id
+    if property_image.property_id != property_id:
+        raise HTTPException(status_code=400, detail="Specified property ID does not have this image")
 
     # Delete image in file system
     if settings.dev_environment == "local":
