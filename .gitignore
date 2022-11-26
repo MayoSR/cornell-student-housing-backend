@@ -144,3 +144,6 @@ cython_debug/
 .png
 .jpg
 .jpeg
+
+# Ignore blob folder
+/blob

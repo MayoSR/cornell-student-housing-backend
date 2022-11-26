@@ -103,7 +103,6 @@ def create_property_image(
 
         # Now create a DB entry for the image
         abs_path = os.path.abspath(path)
-        print(abs_path)
         db_property_image = PropertyImage(
             property_id=property_id, path=abs_path)
 
