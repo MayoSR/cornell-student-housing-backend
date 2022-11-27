@@ -28,7 +28,7 @@ router = APIRouter(prefix="/properties")
 
 ### HTTP GET FUNCTIONS ###
 
-@router.get("/", response_model=list[Property])
+@router.get("/", response_model=list[PropertyRead])
 def get_all_properties(
     *,
     owner_id: uuid.UUID | None = Query(default=None),
@@ -47,7 +47,7 @@ def get_all_properties(
     return properties
 
 
-@router.get("/{property_id}", response_model=Property)
+@router.get("/{property_id}", response_model=PropertyRead)
 def get_property_by_id(
     *,
     session: Session = Depends(get_session),

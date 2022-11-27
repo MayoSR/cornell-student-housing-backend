@@ -27,7 +27,7 @@ router = APIRouter(prefix="/accounts")
 
 ### HTTP GET FUNCTIONS ###
 
-@router.get("/", response_model=list[Account])
+@router.get("/", response_model=list[AccountRead])
 def get_all_accounts(
     *,
     session: Session = Depends(get_session),
@@ -42,7 +42,7 @@ def get_all_accounts(
     return accounts
 
 
-@router.get("/{account_id}", response_model=Account)
+@router.get("/{account_id}", response_model=AccountRead)
 def get_account_by_id(
     *,
     session: Session = Depends(get_session),

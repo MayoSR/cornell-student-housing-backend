@@ -28,7 +28,7 @@ router = APIRouter(prefix="/properties")
 
 ### HTTP GET FUNCTIONS ###
 
-@router.get("/{property_id}/images", response_model=list[PropertyImage])
+@router.get("/{property_id}/images", response_model=list[PropertyImageRead])
 def get_all_property_images(
     *,
     session: Session = Depends(get_session),
@@ -52,7 +52,7 @@ def get_all_property_images(
 
 ### HTTP POST FUNCTIONS ###
 
-@router.post("/{property_id}/images")
+@router.post("/{property_id}/images", response_model=PropertyImageRead)
 def create_property_image(
     *,
     session: Session = Depends(get_session),
