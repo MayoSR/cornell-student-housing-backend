@@ -31,8 +31,11 @@ from .reviews.routes import router as review_router
 
 
 def get_application():
+    
+    # Create new Fast API App
     _app = FastAPI(title=settings.app_name)
 
+    # Add middleware
     _app.add_middleware(
         CORSMiddleware,
         allow_origins=[str(origin)
@@ -42,21 +45,29 @@ def get_application():
         allow_headers=["*"],
     )
 
-    # Initialize database?
+    # Create database tables (if not existant)
+    # and establish connection
     create_db_and_tables()
 
-    # Adding routers
+    # Add routing
     _app.include_router(home_router, prefix="/api", tags=["home"])
     _app.include_router(accounts_router, prefix="/api", tags=["accounts"])
     _app.include_router(property_router, prefix="/api", tags=["properties"])
     _app.include_router(property_image_router, prefix="/api", tags=["property_images"])
     _app.include_router(review_router, prefix="/api", tags=["reviews"])
 
-    # Force redirect of the "/" route to "/api"
-
+    # Default routes
     @_app.get("/")
     def redirect_home():
+        """
+        Forces redirect of "/" to "/api"
+        """
         return RedirectResponse(url="/api")
+
+    # App events
+    # ADD HERE...
+
+    
 
     return _app
 
