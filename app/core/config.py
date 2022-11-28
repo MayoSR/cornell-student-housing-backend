@@ -19,9 +19,8 @@ class Settings(BaseSettings):
     postgres_user: str
     postgres_password: str
 
-    # Specify whether we are on local development
-    # or cloud development
-    dev_environment = "local"
+    # Specify whether we are on local or cloud development
+    dev_environment: str
 
     class Config:
         env_file = ".env"

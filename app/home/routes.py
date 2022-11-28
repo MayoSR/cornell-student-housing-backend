@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends
 
 # SQLModel imports
-from sqlmodel import Session, select
+from sqlmodel import Session, select, delete
 
 # Model imports
 from ..accounts.models import Account
@@ -18,6 +18,7 @@ from ..core.config import settings
 
 # Standard library imports
 import os
+import shutil
 
 # Initializing router
 router = APIRouter()
@@ -31,16 +32,20 @@ def delete_all(session: Session = Depends(get_session)):
     """
     THIS IS DANGEROUS! Should only be used for testing
     """
+    
+    # Delete everything
+    session.exec(delete(Review))
+    session.exec(delete(PropertyImage))
+    session.exec(delete(Property))
+    session.exec(delete(Account))
 
-    # Delete all models
-    session.delete(Review)
-    session.delete(PropertyImage)
-    session.delete(Property)
-    session.delete(Account)
+    # Commit the delete
+    session.commit()
 
     # If local, delete blob folder
     if settings.dev_environment == "local":
-        os.rmdir("/blob")
+        if os.path.exists("blob/"):
+            shutil.rmtree("blob/")
 
     # Return ok status
     return {"ok": True}

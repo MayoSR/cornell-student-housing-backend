@@ -23,8 +23,33 @@ client: TestClient = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def setup_and_teardown():
-    pass
 
-def test_get_home():
-    response: Response = client.get("/api")
+    # Delete everything in database
+    response: Response = client.delete("/api/")
     assert response.status_code == 200
+    assert response.json() == {"ok": True}
+    
+    # Transfer control to a test
+    yield
+
+    # Clear everything in database
+    response: Response = client.delete("/api/")
+    assert response.status_code == 200
+    assert response.json() == {"ok": True}
+
+def test_create_account():
+
+    # Make first account
+    response: Response = client.post(
+        "/api/accounts/",
+        json={
+            "fname": "Maheer",
+            "lname": "Aeron",
+            "email": "maa368@cornell.edu"
+        }
+    )
+    assert response.status_code == 200
+
+    # Now call get on all accounts
+    response = client.get("/api/accounts/")
+    print(response.json())
