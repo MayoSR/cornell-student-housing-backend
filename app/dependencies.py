@@ -14,5 +14,9 @@ def get_session():
     with Session(engine) as session:
         yield session
 
-def get_blob():
-    return BlobServiceClient.from_connection_string(settings.azure_storage_connection_string)
+
+def get_container_client() -> ContainerClient:
+    return ContainerClient.from_connection_string(
+        conn_str=settings.azure_storage_connection_string,
+        container_name=settings.azure_storage_container_name,
+    )

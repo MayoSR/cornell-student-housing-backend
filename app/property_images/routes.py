@@ -15,7 +15,7 @@ from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 from .models import PropertyImage, PropertyImageRead
 
 # Dependency imports
-from ..dependencies import get_session, get_blob
+from ..dependencies import get_session, get_container_client
 
 # Settings import
 from ..config import settings
@@ -60,7 +60,7 @@ def get_all_property_images(
 def create_property_image(
     *,
     session: Session = Depends(get_session),
-    blob_service_client: BlobServiceClient = Depends(get_blob),
+    container_client: ContainerClient = Depends(get_container_client),
     property_id: uuid.UUID = Path(),
     upload_file: UploadFile = File(),
 ):
@@ -94,8 +94,7 @@ def create_property_image(
 
         # Create the blob path
         blob_path: str = f"{property_id}/{upload_file.filename}"
-        blob_client: BlobClient = blob_service_client.get_blob_client(container="images", blob=blob_path)
-        blob_client.upload_blob(upload_file.file)
+        container_client.upload_blob(name=blob_path, data=upload_file.file)
 
         # Set the final path
         final_path = blob_path
@@ -118,7 +117,7 @@ def create_property_image(
 def delete_property_image(
     *,
     session: Session = Depends(get_session),
-    blob_service_client: BlobServiceClient = Depends(get_blob),
+    container_client: ContainerClient = Depends(get_container_client),
     property_id: uuid.UUID = Path(),
     property_image_id: uuid.UUID = Path()
 ):
@@ -141,8 +140,7 @@ def delete_property_image(
                 status_code=404, detail=f"Image not found on file system: {e.filename} - {e.strerror}")
     elif settings.dev_environment == "cloud":
         try:
-            blob_client: BlobClient = blob_service_client.get_blob_client(container="images", blob=property_image.path)
-            blob_client.delete_blob()
+            container_client.delete_blob(blob=property_image.path)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"There was an error trying to delete image on cloud {e}")
 

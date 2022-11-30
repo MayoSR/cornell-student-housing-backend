@@ -21,6 +21,7 @@ class Settings(BaseSettings):
 
     # Define Azure Blob settings
     azure_storage_connection_string: str
+    azure_storage_container_name: str
 
     # Specify whether we are on local or cloud development
     dev_environment: str
