@@ -14,7 +14,7 @@ from ..reviews.models import Review
 from ..dependencies import get_session
 
 # Settings import
-from ..core.config import settings
+from ..config import settings
 
 # Standard library imports
 import os

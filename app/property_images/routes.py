@@ -15,7 +15,7 @@ from .models import PropertyImage, PropertyImageRead
 from ..dependencies import get_session
 
 # Settings import
-from ..core.config import settings
+from ..config import settings
 
 # Standard library imports
 import uuid

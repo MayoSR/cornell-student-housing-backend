@@ -142,8 +142,7 @@ class TestProperties:
     ### TEST HTTP PATCH FUNCTIONS ###
 
     def test_update_property(self):
-        pass
-
+        
         # Try updating property
         response = client.patch(
             f"/api/properties/{self.property['id']}",

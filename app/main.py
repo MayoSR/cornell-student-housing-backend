@@ -17,7 +17,7 @@ from starlette.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # Settings imports
-from .core.config import settings
+from .config import settings
 
 # Database imports
 from .database import create_db_and_tables
