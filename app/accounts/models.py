@@ -16,7 +16,7 @@ from ..properties.models import Property
 
 class Account(SQLModel, table=True):
 
-    # Table name
+    # Table arguments
     __tablename__ = "accounts"
 
     # Main fields

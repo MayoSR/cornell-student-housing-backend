@@ -13,7 +13,7 @@ from typing import Optional
 
 class PropertyImage(SQLModel, table=True):
 
-    # Table name
+    # Table arguments
     __tablename__ = "property_images"
 
     # Main Fields

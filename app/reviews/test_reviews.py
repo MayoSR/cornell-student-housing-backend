@@ -9,6 +9,9 @@ import pytest
 from fastapi import FastAPI, Response
 from fastapi.testclient import TestClient
 
+# SQLAlchemy direct imports
+from sqlalchemy.exc import IntegrityError
+
 # Main app import
 from ..main import app
 
@@ -202,10 +205,30 @@ class TestProperties:
         assert self.review1["rating"] == 5
         assert self.review1["content"] == "I like it"
 
+    def test_create_second_review(self):
+        """
+        Tests for creating a second review 
+        by one user for the same property
+        """
+
+        
+        try:
+            # Create another review thats duplicate
+            response = client.post(
+                "/api/reviews/",
+                json={
+                    "property_id": self.prop1['id'],
+                    "poster_id": self.acc1['id'],
+                    "rating": 5,
+                    "content": "This is my second review"
+                }
+            )
+        except IntegrityError as e:
+            assert e is not None
+        
     ### TEST HTTP PATCH FUNCTIONS ###
 
     def test_update_property(self):
-        pass
 
         # Try updating review
         response = client.patch(
@@ -227,6 +250,7 @@ class TestProperties:
     ### TEST HTTP DELETE FUNCTIONS ###
 
     def test_delete_review(self):
+
         # Delete review
         response = client.delete(f"/api/reviews/{self.review1['id']}")
         assert response.status_code == 200

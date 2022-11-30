@@ -16,7 +16,7 @@ from ..property_images.models import PropertyImage
     
 class Property(SQLModel, table=True):
 
-    # Table name
+    # Table arguments
     __tablename__ = "properties"
 
     # Main fields

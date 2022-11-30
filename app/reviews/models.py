@@ -3,7 +3,7 @@ Contains models for Review
 """
 
 # SQL Model imports
-from sqlmodel import Field, SQLModel, Relationship
+from sqlmodel import Field, SQLModel, Relationship, UniqueConstraint
 
 # Standard library imports
 import uuid
@@ -13,8 +13,12 @@ from typing import Optional
 
 class Review(SQLModel, table=True):
 
-    # Table name
+    # Table arguments
     __tablename__ = "reviews"
+
+    __table_args__ = (
+        UniqueConstraint("property_id", "poster_id", name="property_poster_constraint"),
+    )
 
     # Main Fields
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
