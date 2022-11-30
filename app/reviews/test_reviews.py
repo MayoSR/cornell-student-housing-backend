@@ -205,13 +205,12 @@ class TestProperties:
         assert self.review1["rating"] == 5
         assert self.review1["content"] == "I like it"
 
-    def test_create_second_review(self):
+    def test_create_duplicate_review(self):
         """
-        Tests for creating a second review 
+        Tests for creating a duplicate review 
         by one user for the same property
         """
-
-        
+ 
         try:
             # Create another review thats duplicate
             response = client.post(
