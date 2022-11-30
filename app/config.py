@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     postgres_user: str
     postgres_password: str
 
+    # Define Azure Blob settings
+    azure_storage_connection_string: str
+
     # Specify whether we are on local or cloud development
     dev_environment: str
 

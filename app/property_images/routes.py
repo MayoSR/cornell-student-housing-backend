@@ -8,11 +8,14 @@ from fastapi import APIRouter, Depends, Query, Path, Body, File, UploadFile, HTT
 # SQLModel imports
 from sqlmodel import Session, select
 
+# Azure Blobl imports
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+
 # Model imports
 from .models import PropertyImage, PropertyImageRead
 
 # Dependency imports
-from ..dependencies import get_session
+from ..dependencies import get_session, get_blob
 
 # Settings import
 from ..config import settings
@@ -52,50 +55,62 @@ def get_all_property_images(
 
 ### HTTP POST FUNCTIONS ###
 
+
 @router.post("/{property_id}/images", response_model=PropertyImageRead)
 def create_property_image(
     *,
     session: Session = Depends(get_session),
+    blob_service_client: BlobServiceClient = Depends(get_blob),
     property_id: uuid.UUID = Path(),
     upload_file: UploadFile = File(),
 ):
 
-    # Check environment
+    # Ensure file is supported type
+    if upload_file.content_type not in ("image/png", "image/jpg", "image/jpeg"):
+        raise HTTPException(
+            status_code=400, detail="Unsupported image file type")
+
+    # Used for finalizing the database entry's "path" field later
+    final_path: str = ""
+
+    # Use local, simulated "blob" storage
     if settings.dev_environment == "local":
 
-        # Ensure file is supported type
-        if upload_file.content_type not in ("image/png", "image/jpg", "image/jpeg"):
-            raise HTTPException(
-                status_code=400, detail="Unsupported image file type")
-
-        # Create subfolder in "/blob" for property id if not found
-        base_path: str = f"blob/{property_id}"
-        if not os.path.exists(base_path):
-            os.makedirs(base_path)
+        # If "/blob" doesn't have a subfolder for the property id, make it
+        subfolder: str = f"blob/{property_id}"
+        if not os.path.exists(subfolder):
+            os.makedirs(subfolder)
 
         # Now create the path and save the image
-        path: str = f"{base_path}/{upload_file.filename}"
+        path: str = f"{subfolder}/{upload_file.filename}"
         with open(path, "wb+") as file_obj:
             file_obj.write(upload_file.file.read())
 
-        # Now create a DB entry for the image
-        abs_path = os.path.abspath(path)
-        db_property_image = PropertyImage(
-            property_id=property_id, path=abs_path)
+        # Set the final path
+        final_path = os.path.abspath(path)
 
-        # Commit to DBMS
-        session.add(db_property_image)
-        session.commit()
-        session.refresh(db_property_image)
+    # Use azure blob storage
+    elif settings.dev_environment == "cloud":
 
-        # Return back property image
-        return db_property_image
+        # Create the blob path
+        blob_path: str = f"{property_id}/{upload_file.filename}"
+        blob_client: BlobClient = blob_service_client.get_blob_client(container="images", blob=blob_path)
+        blob_client.upload_blob(upload_file.file)
 
-    # Currently, cloud is not supported
-    else:
-        raise HTTPException(
-            status_code=501, detail="Image uploading to cloud not yet supported")
+        # Set the final path
+        final_path = blob_path
 
+    
+    # Now create the database entry 
+    db_property_image = PropertyImage(property_id=property_id, path=final_path)
+
+    # Commit to DBMS
+    session.add(db_property_image)
+    session.commit()
+    session.refresh(db_property_image)
+
+    # Return back property image
+    return db_property_image
 
 ### HTTP DELETE FUNCTIONS ###
 
@@ -103,6 +118,7 @@ def create_property_image(
 def delete_property_image(
     *,
     session: Session = Depends(get_session),
+    blob_service_client: BlobServiceClient = Depends(get_blob),
     property_id: uuid.UUID = Path(),
     property_image_id: uuid.UUID = Path()
 ):
@@ -116,16 +132,19 @@ def delete_property_image(
     if property_image.property_id != property_id:
         raise HTTPException(status_code=400, detail="Specified property ID does not have this image")
 
-    # Delete image in file system
+    # Delete image in the file system, either local or cloud
     if settings.dev_environment == "local":
         try:
             os.remove(property_image.path)
         except OSError as e:
             raise HTTPException(
                 status_code=404, detail=f"Image not found on file system: {e.filename} - {e.strerror}")
-    else:
-        raise HTTPException(
-            status_code=501, detail="Image deleting on cloud not yet supported")
+    elif settings.dev_environment == "cloud":
+        try:
+            blob_client: BlobClient = blob_service_client.get_blob_client(container="images", blob=property_image.path)
+            blob_client.delete_blob()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"There was an error trying to delete image on cloud {e}")
 
     # Commit to DBMS
     session.delete(property_image)
