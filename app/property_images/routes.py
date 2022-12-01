@@ -1,5 +1,5 @@
 """
-Contains route endpoints to access Property Images
+Contains routes to access Property Images
 """
 
 # FastAPI imports
@@ -73,8 +73,8 @@ def create_property_image(
     # Used for finalizing the database entry's "path" field later
     final_path: str = ""
 
-    # Use local, simulated "blob" storage
-    if settings.dev_environment == "local":
+    # Use settings to track if we upload to azure blob or local
+    if not settings.use_azure_blob:
 
         # If "/blob" doesn't have a subfolder for the property id, make it
         subfolder: str = f"blob/{property_id}"
@@ -89,8 +89,7 @@ def create_property_image(
         # Set the final path
         final_path = os.path.abspath(path)
 
-    # Use azure blob storage
-    elif settings.dev_environment == "cloud":
+    else:
 
         # Create the blob path
         blob_path: str = f"{property_id}/{upload_file.filename}"
@@ -131,14 +130,14 @@ def delete_property_image(
     if property_image.property_id != property_id:
         raise HTTPException(status_code=400, detail="Specified property ID does not have this image")
 
-    # Delete image in the file system, either local or cloud
-    if settings.dev_environment == "local":
+    # Use settings to track if we delete on azure blob or local
+    if not settings.use_azure_blob:
         try:
             os.remove(property_image.path)
         except OSError as e:
             raise HTTPException(
                 status_code=404, detail=f"Image not found on file system: {e.filename} - {e.strerror}")
-    elif settings.dev_environment == "cloud":
+    else:
         try:
             container_client.delete_blob(blob=property_image.path)
         except Exception as e:

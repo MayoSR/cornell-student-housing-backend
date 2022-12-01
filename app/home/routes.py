@@ -43,7 +43,7 @@ def delete_all(session: Session = Depends(get_session)):
     session.commit()
 
     # If local, delete blob folder
-    if settings.dev_environment == "local":
+    if not settings.use_azure_blob:
         if os.path.exists("blob/"):
             shutil.rmtree("blob/")
 

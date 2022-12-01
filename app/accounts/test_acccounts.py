@@ -13,15 +13,33 @@ from fastapi.testclient import TestClient
 from ..main import app
 
 # Model imports
-from ..accounts.models import Account
-from ..properties.models import Property
-from ..property_images.models import PropertyImage
-from ..reviews.models import Review
+from ..accounts.models import AccountCreate
 
 # Create new client
 client: TestClient = TestClient(app)
 
+### GLOBAL HELPER FUNCTIONS ###
+
+def create_account(account: AccountCreate, client_instance: TestClient) -> dict:
+    """
+    Create an Account object on API, validate, 
+    then return the JSON model of it
+    """
+
+    # Get account as dictionary
+    account_dict: dict = account.dict()
+
+    # Send request to create account
+    response: Response = client_instance.post("/api/accounts/", json=account_dict)
+
+    # Test and return
+    assert response.status_code == 200
+    return response.json()
+
+
 class TestAccounts:
+
+    ### SETUP FUNCTIONS ###
 
     @pytest.fixture(autouse=True)
     def setup_and_teardown(self):
@@ -31,17 +49,15 @@ class TestAccounts:
         assert response.status_code == 200
         assert response.json() == {"ok": True}
 
-        # Create a new global account and save it
-        response = client.post(
-            "/api/accounts/",
-            json={
-                "fname": "Maheer",
-                "lname": "Aeron",
-                "email": "maa368@cornell.edu"
-            }
+        # Create a new account and save it in the class
+        self.account = create_account(
+            AccountCreate(
+                fname="Maheer", 
+                lname="Aeron", 
+                email="maa368@cornell.edu"
+            ),
+            client_instance=client
         )
-        assert response.status_code == 200
-        self.me = response.json()
         
         # Transfer control to a test
         yield
@@ -55,28 +71,26 @@ class TestAccounts:
     ### TEST HTTP GET FUNCTIONS ###
 
     def test_get_all_accounts(self):
-    
+
         # Make second account
-        response = client.post(
-            "/api/accounts/",
-            json={
-                "fname": "Mayank",
-                "lname": "Rao",
-                "email": "ms3293@cornell.edu"
-            }
+        account2: dict = create_account(
+            AccountCreate(
+                fname="Mayank", 
+                lname="Rao", 
+                email="ms3293@cornell.edu"
+            ),
+            client_instance=client
         )
-        assert response.status_code == 200
 
         # Make third account
-        response = client.post(
-            "/api/accounts/",
-            json={
-                "fname": "Brett",
-                "lname": "Schelsinger",
-                "email": "bgs59@cornell.edu"
-            }
+        account3: dict = create_account(
+            AccountCreate(
+                fname="Brett", 
+                lname="Schelsinger", 
+                email="bgs59@cornell.edu"
+            ),
+            client_instance=client
         )
-        assert response.status_code == 200
 
         # Now call get on all accounts
         response = client.get("/api/accounts/")
@@ -87,28 +101,25 @@ class TestAccounts:
 
     def test_get_account(self):
 
-        # Call get on me and store the fetched acc
-        response = client.get(f"/api/accounts/{self.me['id']}")
+        # Call get on the stored account in the class
+        response = client.get(f"/api/accounts/{self.account['id']}")
         fetched_account: dict = response.json()
 
         # Check account properties itself
-        assert fetched_account["id"] == self.me["id"]
-        assert fetched_account["fname"] == self.me["fname"]
-        assert fetched_account["lname"] == self.me["lname"]
-        assert fetched_account["email"] == self.me["email"]
-        assert fetched_account["created"] == self.me["created"]
+        assert fetched_account["id"] == self.account["id"]
+        assert fetched_account["fname"] == self.account["fname"]
+        assert fetched_account["lname"] == self.account["lname"]
+        assert fetched_account["email"] == self.account["email"]
+        assert fetched_account["created"] == self.account["created"]
 
     ### TEST HTTP POST FUNCTIONS ###
 
     def test_create_account(self):
-        """
-        Tests for creating an account
-        """
 
         # Setup already creates an account. Just check it
-        assert self.me["fname"] == "Maheer"
-        assert self.me["lname"] == "Aeron"
-        assert self.me["email"] == "maa368@cornell.edu"
+        assert self.account["fname"] == "Maheer"
+        assert self.account["lname"] == "Aeron"
+        assert self.account["email"] == "maa368@cornell.edu"
 
     ### TEST HTTP PATCH FUNCTIONS ###
 
@@ -116,7 +127,7 @@ class TestAccounts:
 
         # Try updating account
         response = client.patch(
-            f"/api/accounts/{self.me['id']}",
+            f"/api/accounts/{self.account['id']}",
             json={
                 "fname": "Mahee",
                 "lname": "Aero",
@@ -126,7 +137,7 @@ class TestAccounts:
         assert response.status_code == 200
 
         # Now issue a get and test the fields
-        response = client.get(f"/api/accounts/{self.me['id']}")
+        response = client.get(f"/api/accounts/{self.account['id']}")
         fetched_account: dict = response.json()
 
         assert fetched_account["fname"] == "Mahee"
@@ -138,7 +149,7 @@ class TestAccounts:
     def test_delete_account(self):
 
         # Delete account
-        response = client.delete(f"/api/accounts/{self.me['id']}")
+        response = client.delete(f"/api/accounts/{self.account['id']}")
         assert response.status_code == 200
         assert response.json() == {"ok": True}
 

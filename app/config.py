@@ -23,8 +23,8 @@ class Settings(BaseSettings):
     azure_storage_connection_string: str
     azure_storage_container_name: str
 
-    # Specify whether we are on local or cloud development
-    dev_environment: str
+    # Specify whether we are using azure blob or not
+    use_azure_blob: bool
 
     class Config:
         env_file = ".env"

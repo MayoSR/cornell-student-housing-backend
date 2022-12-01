@@ -1,8 +1,5 @@
 """
-    Contains route endpoints to access Accounts
-
-    TODO:
-        - See if you can type check account(s) objects
+Contains routes to access Accounts
 """
 
 # FastAPI imports

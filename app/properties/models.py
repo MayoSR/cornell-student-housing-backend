@@ -22,7 +22,9 @@ class Property(SQLModel, table=True):
     # Main fields
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     owner_id: uuid.UUID = Field(foreign_key="accounts.id")
+    name: str
     address: str
+    description: str
     start_date: date
     end_date: date
     monthly_rent: int
@@ -38,7 +40,9 @@ class Property(SQLModel, table=True):
 
 class PropertyCreate(SQLModel):
     owner_id: uuid.UUID
+    name: str
     address: str 
+    description: str
     start_date: date
     end_date: date
     monthly_rent: int
@@ -48,7 +52,9 @@ class PropertyCreate(SQLModel):
 class PropertyRead(SQLModel):
     id: uuid.UUID
     owner_id: uuid.UUID
+    name: str
     address: str
+    description: str
     start_date: date
     end_date: date
     monthly_rent: int
@@ -57,7 +63,9 @@ class PropertyRead(SQLModel):
     created: date
 
 class PropertyUpdate(SQLModel):
+    name: str | None = None
     address: str | None = None
+    description: str | None = None
     start_date: str | None = None
     end_date: str | None = None
     monthly_rent: int | None = None

@@ -1,5 +1,5 @@
 """
-Contains models for Review
+Contains routes to access Reviews
 """
 
 # SQL Model imports

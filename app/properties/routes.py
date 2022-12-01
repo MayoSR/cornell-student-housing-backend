@@ -1,9 +1,5 @@
 """
-Contains route endpoints to access Properties
-
-TODO:
-    - Get all properties by account
-    - Test update and delete
+Contains routes to access Properties
 """
 
 # FastAPI imports
@@ -70,10 +66,6 @@ def create_property(
     session: Session = Depends(get_session),
     property: PropertyCreate = Body()
 ):
-    """
-    TODO: Need to catch when someone adds an owner_id that is invalid
-    Unless it's possible to avoid this?
-    """
 
     # Create property by using from_orm function
     db_property = Property.from_orm(property)
