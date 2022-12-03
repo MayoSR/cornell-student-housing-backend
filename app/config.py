@@ -11,13 +11,14 @@ class Settings(BaseSettings):
     app_name: str = "Subletters API"
 
     # Define CORS origins
-    backend_cors_origins: list[str]
+    backend_cors_origins: list[str] = ["*"]
 
     # Define postgres host
     postgres_host: str
     postgres_db: str
     postgres_user: str
     postgres_password: str
+    use_ssl: bool
 
     # Define Azure Blob settings
     azure_storage_connection_string: str

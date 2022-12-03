@@ -1,0 +1,28 @@
+# Start from Python 3.10.8 image
+FROM python:3.10.8
+
+# In the container /code will house everything
+WORKDIR /code
+
+# Copy requirements.txt
+COPY ./requirements.txt /code/requirements.txt
+
+# Run requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+# Copy over the app folder now, which contains the source code
+COPY ./app /code/app
+
+# Set required environment variables
+ENV POSTGRES_HOST="c.cosmos-subletters-dev.postgres.database.azure.com"
+ENV POSTGRES_DB="citus"
+ENV POSTGRES_USER="citus"
+ENV POSTGRES_PASSWORD="Subletters123"
+ENV USE_SSL=true
+ENV AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=stsublettersdev;AccountKey=VfHYiL4mpGPQogE2VxGCZI0qSZK1rn9pmm9LNz/0F7wm71QbhgAwSeARJugwYlpBiELBESrx/+3z+AStfaAQuA==;EndpointSuffix=core.windows.net"
+ENV AZURE_STORAGE_CONTAINER_NAME="images"
+ENV USE_AZURE_BLOB=true
+
+EXPOSE 8000
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

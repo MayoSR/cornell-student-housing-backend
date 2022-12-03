@@ -1,0 +1,23 @@
+# NOTE: This has not been tested yet!
+
+# Start from Python 3.10.8 image
+FROM python:3.10.8
+
+# In the container /code will house everything
+WORKDIR /code
+
+# Copy requirements.txt
+COPY ./requirements.txt /code/requirements.txt
+
+# Run requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+# Copy over the app folder now, which contains the source code
+COPY ./app /code/app
+
+# Deliberately excluded any environment variable setup
+# You should use docker compose to finish that instead
+
+EXPOSE 8000
+
+CMD ["pytest"]

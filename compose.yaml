@@ -1,3 +1,7 @@
+# Compose file which uses a test build of the API
+# Use this for CI/CD maybe? May need to modify
+# Before you start with CI/CD, coordinate with EVERYONE on this
+
 services:
 
     # API container
@@ -6,10 +10,10 @@ services:
         # Build from Dockerfile in this scope
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: Dockerfile.test
 
-        # Don't run FastAPI until db is up
-        command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; uvicorn app.main:app --host 0.0.0.0'
+        # Don't run tests until db is up
+        command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; pytest'
 
         # For docker compose, we'll manually override the env variables
         environment:
@@ -17,6 +21,10 @@ services:
             - POSTGRES_DB=postgres_test
             - POSTGRES_USER=postgres
             - POSTGRES_PASSWORD=postgres
+            - USE_SSL=false
+            - AZURE_STORAGE_CONNECTION_STRING=""
+            - AZURE_STORAGE_CONTAINER_NAME=""
+            - USE_AZURE_BLOB=false
 
         # Map ports
         ports:
@@ -25,7 +33,7 @@ services:
         # Requires db container dependency
         depends_on:
             - db
-
+            
     # DB container running postgres
     db:
 
