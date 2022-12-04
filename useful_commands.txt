@@ -3,3 +3,4 @@ To push API to docker image registry in Azure:
 2. If needed, username is crsublettersdev. Password is vgNjuYj0I8lLQ45uHJ+uqoyH=9Pu7NWj
 3. Run "docker build -t crsublettersdev.azurecr.io/subletters-api:latest -f .\Dockerfile.azure ."
 4. Run "docker push crsublettersdev.azurecr.io/subletters-api:latest"
+Test
