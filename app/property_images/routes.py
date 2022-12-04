@@ -8,8 +8,8 @@ from fastapi import APIRouter, Depends, Query, Path, Body, File, UploadFile, HTT
 # SQLModel imports
 from sqlmodel import Session, select
 
-# Azure Blobl imports
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+# Azure Blob imports
+from azure.storage.blob import ContainerClient
 
 # Model imports
 from .models import PropertyImage, PropertyImageRead

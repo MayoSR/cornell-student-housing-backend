@@ -15,8 +15,11 @@ def get_session():
         yield session
 
 
-def get_container_client() -> ContainerClient:
-    return ContainerClient.from_connection_string(
-        conn_str=settings.azure_storage_connection_string,
-        container_name=settings.azure_storage_container_name,
-    )
+def get_container_client() -> ContainerClient | None:
+    if settings.use_azure_blob:
+        return ContainerClient.from_connection_string(
+            conn_str=settings.azure_storage_connection_string,
+            container_name=settings.azure_storage_container_name,
+        )
+    else:
+        return None

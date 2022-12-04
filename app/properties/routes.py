@@ -8,14 +8,23 @@ from fastapi import APIRouter, Depends, Query, Path, Body, HTTPException
 # SQLModel imports
 from sqlmodel import Session, select
 
+# Azure Blob imports
+from azure.storage.blob import ContainerClient
+
 # Model imports
 from .models import Property, PropertyCreate, PropertyRead, PropertyUpdate
+from ..property_images.models import PropertyImage
 
 # Dependency imports
-from ..dependencies import get_session
+from ..dependencies import get_session, get_container_client
+
+# Settings import
+from ..config import settings
 
 # Standard library imports
 import uuid
+import os
+import shutil
 
 
 # Initializing router
@@ -34,9 +43,9 @@ def get_all_properties(
 ):
     # Get properties with filter on owner_id
     properties = session.exec(select(Property)
-                           .where((Property.owner_id == owner_id) if owner_id else (Property is not None))
-                           .offset(offset)
-                           .limit(limit))\
+                              .where((Property.owner_id == owner_id) if owner_id else (Property is not None))
+                              .offset(offset)
+                              .limit(limit))\
         .all()
 
     # Return list of properties
@@ -114,7 +123,8 @@ def update_property(
 def delete_property(
     *,
     session: Session = Depends(get_session),
-    property_id: uuid.UUID = Path()
+    property_id: uuid.UUID = Path(),
+    container_client: ContainerClient = Depends(get_container_client),
 ):
 
     # Get property and check if it exists
@@ -125,6 +135,22 @@ def delete_property(
     # Commit to DBMS
     session.delete(property)
     session.commit()
+
+    # Now try to delete property images associated with this
+    if not settings.use_azure_blob:
+        try:
+            path = f"blob/{property_id}"
+            if os.path.exists(path):
+                shutil.rmtree(path)
+        except OSError as e:
+            raise HTTPException(
+                status_code=404, detail=f"There were images for property id: {property_id} but there was an error deleting existing images")
+    else:
+        blobs =  [blob.name for blob in container_client.list_blobs(name_starts_with=f"{property_id}")]
+        blobs.sort(reverse=True, key=len)
+        if len(blobs) > 0:
+            for blob in blobs:
+                container_client.delete_blob(blob)
 
     # Return back an OK response
     return {"ok": True}
