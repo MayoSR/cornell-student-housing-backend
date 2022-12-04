@@ -18,7 +18,7 @@ from ..main import app
 # Model imports
 from ..accounts.models import AccountCreate
 from ..properties.models import PropertyCreate
-from ..reviews.models import ReviewCreate
+from .models import ReviewCreate
 
 # Helper function imports from other tests
 from ..accounts.test_acccounts import create_account

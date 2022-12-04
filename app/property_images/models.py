@@ -22,9 +22,6 @@ class PropertyImage(SQLModel, table=True):
     path: str = Field(unique=True)
     created: date = Field(default=date.today())
 
-    # Relationships
-    property: Optional["Property"] = Relationship()
-
 class PropertyImageRead(SQLModel):
     id: uuid.UUID
     property_id: uuid.UUID

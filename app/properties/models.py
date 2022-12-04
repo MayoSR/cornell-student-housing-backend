@@ -32,12 +32,6 @@ class Property(SQLModel, table=True):
     num_bathrooms: int
     created: date = Field(default=date.today())
 
-    # Relationships
-    reviews: list[Review] = Relationship(back_populates="property", sa_relationship_kwargs={"cascade": "delete"})
-    images: list[PropertyImage] = Relationship(back_populates="property", sa_relationship_kwargs={"cascade": "delete"})
-
-    account: Optional["Account"] = Relationship()
-
 class PropertyCreate(SQLModel):
     owner_id: uuid.UUID
     name: str

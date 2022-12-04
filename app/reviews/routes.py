@@ -23,22 +23,23 @@ import uuid
 
 
 # Initializing router
-router = APIRouter(prefix="/reviews")
+router = APIRouter(prefix="/properties")
 
 
 ### HTTP GET FUNCTIONS ###
 
-@router.get("/", response_model=list[Review])
+@router.get("/{property_id}/reviews", response_model=list[Review])
 def get_all_reviews(
     *,
-    property_id: uuid.UUID | None = Query(default=None),
     session: Session = Depends(get_session),
+    property_id: uuid.UUID = Path(),
     offset: int = Query(default=0),
     limit: int = Query(default=100, lte=100),
 ):
-    # Get reviews with filter on property id
+
+    # Get property images with filter on property_id
     reviews = session.exec(select(Review)
-                           .where((Review.property_id == property_id) if property_id else (Review is not None))
+                           .where(Review.property_id == property_id)
                            .offset(offset)
                            .limit(limit))\
         .all()
@@ -46,36 +47,24 @@ def get_all_reviews(
     # Return list of reviews
     return reviews
 
-
-@router.get("/{review_id}", response_model=Review)
-def get_review_by_id(
-    *,
-    session: Session = Depends(get_session),
-    review_id: uuid.UUID = Path()
-):
-    # Get review and check if it exists
-    review = session.get(Review, review_id)
-    if not review:
-        raise HTTPException(status_code=404, detail="Review not found")
-
-    # Return back review
-    return review
-
-
 ### HTTP POST FUNCTIONS ###
 
-@router.post("/", response_model=ReviewRead)
+
+@router.post("/{property_id}/reviews", response_model=ReviewRead)
 def create_review(
     *,
     session: Session = Depends(get_session),
+    property_id: uuid.UUID = Path(),
     review: ReviewCreate = Body()
 ):
-    """
-    TODO: Need to catch when property and poster id is invalid
-    """
 
-    # Create review by using from_orm function
-    db_review = Review.from_orm(review)
+    # Create review
+    db_review = Review(
+        property_id=property_id,
+        poster_id=review.poster_id,
+        rating=review.rating,
+        content=review.content
+    )
 
     # Commit to DBMS
     session.add(db_review)
@@ -88,16 +77,17 @@ def create_review(
 
 ### HTTP PATCH FUNCTIONS ###
 
-@router.patch("/{review_id}", response_model=ReviewRead)
+@router.patch("/{property_id}/reviews/{account_id}", response_model=ReviewRead)
 def update_review(
     *,
     session: Session = Depends(get_session),
-    review_id: uuid.UUID = Path(),
+    property_id: uuid.UUID = Path(),
+    account_id: uuid.UUID = Path(),
     review: ReviewUpdate = Body()
 ):
 
     # Check if review exists
-    db_review = session.get(Review, review_id)
+    db_review = session.get(Review, (property_id, account_id))
     if not db_review:
         raise HTTPException(status_code=404, detail="Review not found")
 
@@ -117,15 +107,16 @@ def update_review(
 
 ### HTTP DELETE FUNCTIONS ###
 
-@router.delete("/{review_id}")
+@router.delete("/{property_id}/reviews/{account_id}")
 def delete_review(
     *,
     session: Session = Depends(get_session),
-    review_id: uuid.UUID = Path()
+    property_id: uuid.UUID = Path(),
+    account_id: uuid.UUID = Path(),
 ):
 
     # Get review and check if it exists
-    review = session.get(Review, review_id)
+    review = session.get(Review, (property_id, account_id))
     if not review:
         raise HTTPException(status_code=404, detail="Review not found")
 

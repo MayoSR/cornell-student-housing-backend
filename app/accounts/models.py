@@ -26,9 +26,6 @@ class Account(SQLModel, table=True):
     email: str
     created: date = Field(default=date.today())
 
-    # Relationships
-    properties: list[Property] = Relationship(back_populates="account", sa_relationship_kwargs={"cascade": "delete"})
-
 class AccountCreate(SQLModel):
     fname: str
     lname: str
