@@ -16,9 +16,9 @@ class Review(SQLModel, table=True):
     # Table arguments
     __tablename__ = "reviews"
 
-    __table_args__ = (
-        UniqueConstraint("property_id", "poster_id", name="property_poster_constraint"),
-    )
+    # __table_args__ = (
+    #     UniqueConstraint("property_id", "poster_id", name="property_poster_constraint"),
+    # )
 
     # Main Fields
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
